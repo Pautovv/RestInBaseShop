@@ -1,0 +1,31 @@
+services:
+  db:
+    image: postgres:latest
+    container_name: rib_db
+    restart: always
+    environment:
+      POSTGRES_USER: root
+      POSTGRES_PASSWORD: root
+      POSTGRES_DB: rib_db
+      PGDATA: /var/lib/postgresql/data
+    ports:
+      - 5433:5432
+    volumes:
+      - rib_db:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U root -d rib_dp -p 5432"]
+      interval: 2s
+      timeout: 2s
+      retries: 30
+  next:
+    build: ./
+    image: rib_next_image:latest
+    container_name: rib_next
+    restart: always
+    ports:
+      - 3000:3000
+    depends_on:
+      db:
+        condition: service_healthy
+volumes:
+  rib_db:
